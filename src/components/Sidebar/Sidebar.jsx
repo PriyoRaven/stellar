@@ -43,12 +43,12 @@ const Sidebar = () => {
       {/* Top part */}
       <div className="top">
         <IoMenu
-          size={35}
-          className="block cursor-pointer mb-6"
+          size={45}
+          className="block cursor-pointer mb-10 p-2.5 rounded-2xl hover:bg-primary-200 hover:text-gray-600 transition-all duration-300"
           onClick={toggleSidebar}
         />
         <div
-          className={`inline-flex items-center py-2.5 px-3 gap-2.5 bg-primary-200 rounded-2xl text-sm text-gray-600 cursor-pointer transition-all duration-300 ${
+          className={`inline-flex items-center py-2.5 px-3 gap-2.5 bg-primary-200 rounded-2xl text-sm text-gray-400 cursor-pointer hover:bg-primary-300 hover:text-gray-600 transition-all duration-300 ${
             extended ? "" : "justify-center"
           }`}
         >
@@ -63,7 +63,7 @@ const Sidebar = () => {
             </p>
           )}
         </div>
-        {extended && ( // Conditionally render this section only when extended is true
+        {extended && (
           <div className="flex flex-col">
             <p className="mt-7 mb-5">Recent</p>
             <Button
