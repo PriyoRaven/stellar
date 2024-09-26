@@ -17,6 +17,7 @@ const ContextProvider = ({ children }) => {
 
     try {
       setLoading(true);
+      setInput("");
       setShowResult(true);
       setRecentPrompt(input);
 
@@ -32,7 +33,6 @@ const ContextProvider = ({ children }) => {
     } catch (error) {
       console.error("Error: ", error);
     } finally {
-      setInput("");
       setLoading(false);
     }
   };

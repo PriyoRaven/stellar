@@ -7,16 +7,39 @@ import { IoBulbOutline, IoCodeSlash, IoCompassOutline } from "react-icons/io5";
 import { FiMessageCircle } from "react-icons/fi";
 import { Context } from "../../context/context";
 
-const ChatMessage = ({ message }) => (
-  <div className="result-data my-4">
-    <img
-      src={message.role === "user" ? assets.user_icon : assets.gemini_icon}
-      alt=""
-      className="w-10 rounded-full inline-block mr-3"
-    />
-    <p className="result-text inline-block">{message.parts[0].text}</p>
-  </div>
-);
+const ChatMessage = ({ message }) => {
+  const isUser = message.role === "user";
+
+  return (
+    <div
+      className={`result-data my-4 flex ${
+        isUser ? "justify-end" : "justify-start"
+      }`}
+    >
+      {!isUser && (
+        <img
+          src={assets.gemini_icon}
+          alt=""
+          className="w-10 h-10 rounded-full inline-block mr-3"
+        />
+      )}
+      <p
+        className={`result-text inline-block p-3 rounded-3xl ${
+          isUser ? "bg-green-500 text-white" : "bg-red-500 text-white"
+        }`}
+      >
+        {message.parts[0].text}
+      </p>
+      {isUser && (
+        <img
+          src={assets.user_icon}
+          alt=""
+          className="w-10 h-10 rounded-full inline-block ml-3"
+        />
+      )}
+    </div>
+  );
+};
 
 const Main = () => {
   const { onSent, showResult, loading, input, setInput, history } =
@@ -69,7 +92,13 @@ const Main = () => {
             {history.map((message, index) => (
               <ChatMessage key={index} message={message} />
             ))}
-            {loading && <div className="loader">Loading...</div>}
+            {loading && (
+              <div className="loader w-full flex flex-col gap-2">
+                <hr className="animated-bg" />
+                <hr className="animated-bg" />
+                <hr className="animated-bg" />
+              </div>
+            )}
           </div>
         )}
 
@@ -83,9 +112,11 @@ const Main = () => {
               placeholder="Enter your prompt here"
             />
             <div className="flex justify-between items-center cursor-pointer gap-3">
-              <GrGallery size={25} />
-              <HiMiniMicrophone size={25} />
-              <GrSend onClick={() => onSent()} size={25} />
+              {/* <GrGallery size={25} />
+              <HiMiniMicrophone size={25} /> */}
+              <span className="pl-2 pr-3 py-2 hover:bg-slate-300 rounded-full transition-all duration-300">
+                <GrSend onClick={() => onSent()} size={25} />
+              </span>
             </div>
           </div>
           <p className="bottom-info text-xs my-2 mx-auto text-center font-light text-slate-400">
