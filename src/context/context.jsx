@@ -21,8 +21,8 @@ const ContextProvider = ({ children }) => {
       const response = await run(input);
       console.log(response);
 
-      setResultData(response.response);
-      setPrevPrompt((prev) => [prompt, ...prev]);
+      setResultData(response);
+      setPrevPrompt((prev) => [input, ...prev]);
     } catch (error) {
       console.error("Error: ", error);
     } finally {

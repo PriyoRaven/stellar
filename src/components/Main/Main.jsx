@@ -75,9 +75,7 @@ const Main = () => {
               {loading ? (
                 <div className="loader">Loading...</div>
               ) : (
-                <p dangerouslySetInnerHTML={{ __html: resultData }}>
-                  {resultData}
-                </p>
+                <p dangerouslySetInnerHTML={{ __html: resultData }}></p>
               )}
             </div>
           </div>
