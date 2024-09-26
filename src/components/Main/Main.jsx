@@ -7,16 +7,20 @@ import { IoBulbOutline, IoCodeSlash, IoCompassOutline } from "react-icons/io5";
 import { FiMessageCircle } from "react-icons/fi";
 import { Context } from "../../context/context";
 
+const ChatMessage = ({ message }) => (
+  <div className="result-data my-4">
+    <img
+      src={message.role === "user" ? assets.user_icon : assets.gemini_icon}
+      alt=""
+      className="w-10 rounded-full inline-block mr-3"
+    />
+    <p className="result-text inline-block">{message.parts[0].text}</p>
+  </div>
+);
+
 const Main = () => {
-  const {
-    onSent,
-    recentPrompt,
-    showResult,
-    resultData,
-    loading,
-    input,
-    setInput,
-  } = useContext(Context);
+  const { onSent, showResult, loading, input, setInput, history } =
+    useContext(Context);
 
   return (
     <div className="this-main flex-1 min-h-screen pb-28 relative">
@@ -25,7 +29,7 @@ const Main = () => {
         <img className="w-10 rounded-full" src={assets.user_icon} alt="" />
       </div>
       <div className="main-container max-w-5xl m-auto">
-        {!showResult ? (
+        {history.length === 0 ? (
           <>
             <div className="greet my-12 mx-0 text-6xl font-semibold p-5 text-primary-300">
               <p>
@@ -62,22 +66,10 @@ const Main = () => {
             className="result py-0 overflow-y-scroll hide-scrollbar"
             style={{ paddingLeft: "5%", paddingRight: "5%", maxHeight: "70vh" }}
           >
-            <div className="result-title my-10 mx-0 flex items-center gap-5">
-              <img
-                className="w-10 rounded-full"
-                src={assets.user_icon}
-                alt=""
-              />
-              <p>{recentPrompt}</p>
-            </div>
-            <div className="result-data ">
-              <img src={assets.gemini_icon} alt="" className="profile" />
-              {loading ? (
-                <div className="loader">Loading...</div>
-              ) : (
-                <p dangerouslySetInnerHTML={{ __html: resultData }}></p>
-              )}
-            </div>
+            {history.map((message, index) => (
+              <ChatMessage key={index} message={message} />
+            ))}
+            {loading && <div className="loader">Loading...</div>}
           </div>
         )}
 

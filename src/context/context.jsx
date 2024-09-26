@@ -10,19 +10,25 @@ const ContextProvider = ({ children }) => {
   const [showResult, setShowResult] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resultData, setResultData] = useState("");
+  const [history, setHistory] = useState([]);
 
-  const onSent = async (prompt) => {
+  const onSent = async () => {
+    if (!input.trim()) return;
+
     try {
-      setResultData("");
       setLoading(true);
       setShowResult(true);
       setRecentPrompt(input);
 
-      const response = await run(input);
-      console.log(response);
+      const userMessage = { role: "user", parts: [{ text: input }] };
+      const updatedHistory = [...history, userMessage];
+
+      const response = await run(input, updatedHistory);
+
+      const assistantMessage = { role: "model", parts: [{ text: response }] };
+      setHistory([...updatedHistory, assistantMessage]);
 
       setResultData(response);
-      setPrevPrompt((prev) => [input, ...prev]);
     } catch (error) {
       console.error("Error: ", error);
     } finally {
@@ -42,6 +48,7 @@ const ContextProvider = ({ children }) => {
     resultData,
     input,
     setInput,
+    history,
   };
 
   return <Context.Provider value={contextValue}>{children}</Context.Provider>;

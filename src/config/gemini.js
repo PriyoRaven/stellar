@@ -1,8 +1,4 @@
-import {
-  GoogleGenerativeAI,
-  HarmCategory,
-  HarmBlockThreshold,
-} from "@google/generative-ai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
@@ -16,24 +12,31 @@ const generationConfig = {
   topP: 0.95,
   topK: 64,
   maxOutputTokens: 8192,
-  responseMimeType: "text/plain",
 };
 
-async function run(prompt) {
+let chatSession = null;
+
+async function run(prompt, history) {
   try {
-    const chatSession = model.startChat({
-      generationConfig,
-      // safetySettings: Adjust safety settings
-      // See https://ai.google.dev/gemini-api/docs/safety-settings
-      history: [],
-    });
+    if (!chatSession) {
+      chatSession = model.startChat({
+        generationConfig,
+        history: history.map((msg) => ({
+          role: msg.role,
+          parts: [{ text: msg.parts[0].text }],
+        })),
+      });
+    }
 
     const result = await chatSession.sendMessage(prompt);
-    const responseText = result.response.text();
-    console.log(responseText);
-    return responseText;
+
+    if (!result.response) {
+      throw new Error("Invalid response format.");
+    }
+
+    return result.response.text();
   } catch (error) {
-    console.log("Error in run function:", error);
+    console.error("Error in run function:", error);
     throw error;
   }
 }
