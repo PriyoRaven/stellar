@@ -6,10 +6,7 @@ const Card = ({ text, icon: Icon, className }) => {
       <p className="text-slate-600 text-lg">{text}</p>
 
       {Icon && (
-        <Icon
-          size={30}
-          className={`absolute bottom-3 right-3 rounded-3xl bg-white ${className}`}
-        />
+        <Icon size={30} className={`absolute bottom-3 right-3  ${className}`} />
       )}
     </div>
   );

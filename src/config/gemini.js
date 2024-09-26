@@ -29,7 +29,7 @@ async function run(prompt) {
     });
 
     const result = await chatSession.sendMessage(prompt);
-    const responseText = await result.response.text();
+    const responseText = result.response.text();
     console.log(responseText);
     return responseText;
   } catch (error) {
