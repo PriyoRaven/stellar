@@ -24,7 +24,7 @@ const ChatMessage = ({ message, processedResponse }) => {
       )}
       <div
         className={`result-text inline-block p-3 rounded-3xl ${
-          isUser ? "bg-green-500 text-white" : "bg-red-500 text-white"
+          isUser ? "bg-green-500 text-white" : "bg-amber-400 text-white"
         }`}
       >
         {isUser ? (
@@ -64,7 +64,7 @@ const Main = () => {
           <>
             <div className="greet my-12 mx-0 text-6xl font-semibold p-5 text-primary-300">
               <p>
-                <span className="bg-gradient-to-r from-purple-500 via-fuchsia-600 to-pink-500 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-amber-500 via-yellow-400 to-lime-500 bg-clip-text text-transparent">
                   Hello, Raven
                 </span>
               </p>
@@ -94,7 +94,7 @@ const Main = () => {
           </>
         ) : (
           <div
-            className="result py-0 overflow-y-scroll hide-scrollbar"
+            className="result py-0 overflow-y-scroll the-scrollbar"
             style={{ paddingLeft: "5%", paddingRight: "5%", maxHeight: "70vh" }}
           >
             {history.map((message, index) => (
@@ -125,7 +125,7 @@ const Main = () => {
               placeholder="Enter your prompt here"
             />
             <div className="flex justify-between items-center cursor-pointer gap-3">
-              <span className="pl-2 pr-3 py-2 hover:bg-slate-300 rounded-full transition-all duration-300">
+              <span className="pl-2 pr-3 py-2 hover:bg-green-300 hover:scale-110 rounded-full transition-all duration-300">
                 <GrSend onClick={() => onSent()} size={25} />
               </span>
             </div>

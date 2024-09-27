@@ -3,24 +3,40 @@
 @tailwind utilities;
 
 /* Custom CSS */
-/* .hide-scrollbar::-webkit-scrollbar {
-    display: none;
+/* the scroll bar */
+.the-scrollbar::-webkit-scrollbar {
+    width: 10px;
+    height: 0rem;
 }
 
-.hide-scrollbar {
-    scrollbar-width: none;
+.the-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+    transition: all 0.3s ease;
 }
 
-.hide-scrollbar::-webkit-scrollbar-thumb {
-    background-color: transparent;
-} */
+.the-scrollbar::-webkit-scrollbar-track:hover {
+    background: rgb(244, 243, 243);
+}
 
+.the-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgb(233, 233, 233);
+    border-radius: 10px;
+}
+
+.the-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(241, 179, 36);
+    border-radius: 10px;
+}
+
+
+/* the animation for loader */
 .animated-bg {
     border-radius: 4px;
     border: none;
     animation: loader 3s infinite linear;
     background-color: #f6f7f8;
-    background: linear-gradient(to right, #9ed7ff, #ffffff, #9ed7ff);
+    background: linear-gradient(to right, #ffed9e, #ffffff, #ffed9e);
     background-size: 800px 50px;
     height: 20px;
 }
