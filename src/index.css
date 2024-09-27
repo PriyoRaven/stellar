@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* Custom CSS */
-.hide-scrollbar::-webkit-scrollbar {
+/* .hide-scrollbar::-webkit-scrollbar {
     display: none;
 }
 
@@ -13,7 +13,7 @@
 
 .hide-scrollbar::-webkit-scrollbar-thumb {
     background-color: transparent;
-}
+} */
 
 .animated-bg {
     border-radius: 4px;

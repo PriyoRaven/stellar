@@ -1,14 +1,12 @@
-import React, { useContext } from "react";
+import React, { useContext, useRef, useEffect } from "react";
 import { assets } from "../../assets/assets";
 import Card from "../Card";
-import { GrGallery, GrSend } from "react-icons/gr";
-import { HiMiniMicrophone } from "react-icons/hi2";
+import { GrSend } from "react-icons/gr";
 import { IoBulbOutline, IoCodeSlash, IoCompassOutline } from "react-icons/io5";
 import { FiMessageCircle } from "react-icons/fi";
 import { Context } from "../../context/context";
 
-const ChatMessage = ({ message }) => {
-  const { processedText } = useContext(Context);
+const ChatMessage = ({ message, processedResponse }) => {
   const isUser = message.role === "user";
 
   return (
@@ -32,7 +30,7 @@ const ChatMessage = ({ message }) => {
         {isUser ? (
           <p>{message.parts[0].text}</p>
         ) : (
-          <div dangerouslySetInnerHTML={{ __html: processedText + "</p>" }} />
+          <div dangerouslySetInnerHTML={{ __html: processedResponse }} />
         )}
       </div>
       {isUser && (
@@ -47,8 +45,13 @@ const ChatMessage = ({ message }) => {
 };
 
 const Main = () => {
-  const { onSent, showResult, loading, input, setInput, history } =
+  const { onSent, loading, input, setInput, history, responses } =
     useContext(Context);
+  const chatEndRef = useRef(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [history, responses]);
 
   return (
     <div className="this-main flex-1 min-h-screen pb-28 relative">
@@ -95,7 +98,11 @@ const Main = () => {
             style={{ paddingLeft: "5%", paddingRight: "5%", maxHeight: "70vh" }}
           >
             {history.map((message, index) => (
-              <ChatMessage key={index} message={message} />
+              <ChatMessage
+                key={index}
+                message={message}
+                processedResponse={responses[Math.floor(index / 2)]?.text || ""}
+              />
             ))}
             {loading && (
               <div className="loader w-full flex flex-col gap-2">
@@ -104,6 +111,7 @@ const Main = () => {
                 <hr className="animated-bg" />
               </div>
             )}
+            <div ref={chatEndRef} />
           </div>
         )}
 
@@ -117,8 +125,6 @@ const Main = () => {
               placeholder="Enter your prompt here"
             />
             <div className="flex justify-between items-center cursor-pointer gap-3">
-              {/* <GrGallery size={25} />
-              <HiMiniMicrophone size={25} /> */}
               <span className="pl-2 pr-3 py-2 hover:bg-slate-300 rounded-full transition-all duration-300">
                 <GrSend onClick={() => onSent()} size={25} />
               </span>

@@ -9,49 +9,46 @@ const ContextProvider = ({ children }) => {
   const [prevPrompt, setPrevPrompt] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [resultData, setResultData] = useState("");
   const [history, setHistory] = useState([]);
-  const [processedText, setProcessedText] = useState("");
+  const [responses, setResponses] = useState([]);
 
-  const delayParam = (text, setProcessedText) => {
-    // Split the text into segments, preserving asterisks
+  const delayParam = (text, callback) => {
     const segments = text.split(/(\*\*.*?\*\*|\s+)/);
     let currentIndex = 0;
+    let processedText = "<p>";
 
     const processSegment = () => {
       if (currentIndex < segments.length) {
         const segment = segments[currentIndex];
 
         if (segment.startsWith("**") && segment.endsWith("**")) {
-          // Bold text
-          setProcessedText((prev) => prev + `<b>${segment.slice(2, -2)}</b>`);
-          setTimeout(processSegment, 20);
+          processedText += `<b>${segment.slice(2, -2)}</b>`;
+          setTimeout(() => {
+            callback(processedText);
+            processSegment();
+          }, 20);
         } else if (segment.startsWith("*")) {
-          // Italic text and a new paragraph
-          setProcessedText(
-            (prev) => prev + `</br></br><p>>${segment.slice(1)}`
-          );
-          setTimeout(processSegment, 50);
+          processedText += `</br></br><p>>${segment.slice(1)}`;
+          setTimeout(() => {
+            callback(processedText);
+            processSegment();
+          }, 50);
         } else {
-          // Normal text
-          setProcessedText((prev) => prev + segment);
-          setTimeout(processSegment, 0);
+          processedText += segment;
+          setTimeout(() => {
+            callback(processedText);
+            processSegment();
+          }, 10);
         }
 
         currentIndex++;
+      } else {
+        callback(processedText + "</p>", true);
       }
     };
 
-    setProcessedText("<p>"); // Start with an opening paragraph tag
     processSegment();
   };
-
-  useEffect(() => {
-    if (resultData) {
-      setProcessedText("");
-      delayParam(resultData, setProcessedText);
-    }
-  }, [resultData]);
 
   const onSent = async () => {
     if (!input.trim()) return;
@@ -71,7 +68,23 @@ const ContextProvider = ({ children }) => {
       const assistantMessage = { role: "model", parts: [{ text: response }] };
       setHistory((prevHistory) => [...prevHistory, assistantMessage]);
 
-      setResultData(response);
+      // Add a new response object to the responses array
+      setResponses((prevResponses) => [
+        ...prevResponses,
+        { text: "", isComplete: false },
+      ]);
+
+      // Start the animation for the new response
+      delayParam(response, (processedText, isComplete = false) => {
+        setResponses((prevResponses) => {
+          const newResponses = [...prevResponses];
+          newResponses[newResponses.length - 1] = {
+            text: processedText,
+            isComplete,
+          };
+          return newResponses;
+        });
+      });
     } catch (error) {
       console.error("Error: ", error);
     } finally {
@@ -87,11 +100,10 @@ const ContextProvider = ({ children }) => {
     recentPrompt,
     showResult,
     loading,
-    resultData,
     input,
     setInput,
     history,
-    processedText,
+    responses,
   };
 
   return <Context.Provider value={contextValue}>{children}</Context.Provider>;
