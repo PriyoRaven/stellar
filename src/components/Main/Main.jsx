@@ -8,6 +8,7 @@ import { FiMessageCircle } from "react-icons/fi";
 import { Context } from "../../context/context";
 
 const ChatMessage = ({ message }) => {
+  const { processedText } = useContext(Context);
   const isUser = message.role === "user";
 
   return (
@@ -23,13 +24,17 @@ const ChatMessage = ({ message }) => {
           className="w-10 h-10 rounded-full inline-block mr-3"
         />
       )}
-      <p
+      <div
         className={`result-text inline-block p-3 rounded-3xl ${
           isUser ? "bg-green-500 text-white" : "bg-red-500 text-white"
         }`}
       >
-        {message.parts[0].text}
-      </p>
+        {isUser ? (
+          <p>{message.parts[0].text}</p>
+        ) : (
+          <div dangerouslySetInnerHTML={{ __html: processedText + "</p>" }} />
+        )}
+      </div>
       {isUser && (
         <img
           src={assets.user_icon}
