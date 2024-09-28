@@ -4,45 +4,8 @@ import Card from "../Card";
 import { GrSend } from "react-icons/gr";
 import { IoBulbOutline, IoCodeSlash, IoCompassOutline } from "react-icons/io5";
 import { FiMessageCircle } from "react-icons/fi";
+import ChatMessage from "./ChatMessage";
 import { Context } from "../../context/context";
-
-const ChatMessage = ({ message, processedResponse }) => {
-  const isUser = message.role === "user";
-
-  return (
-    <div
-      className={`result-data my-4 flex ${
-        isUser ? "justify-end" : "justify-start"
-      }`}
-    >
-      {!isUser && (
-        <img
-          src={assets.gemini_icon}
-          alt=""
-          className="w-10 h-10 rounded-full inline-block mr-3"
-        />
-      )}
-      <div
-        className={`result-text inline-block p-3 rounded-3xl ${
-          isUser ? "bg-green-500 text-white" : "bg-amber-400 text-white"
-        }`}
-      >
-        {isUser ? (
-          <p>{message.parts[0].text}</p>
-        ) : (
-          <div dangerouslySetInnerHTML={{ __html: processedResponse }} />
-        )}
-      </div>
-      {isUser && (
-        <img
-          src={assets.user_icon}
-          alt=""
-          className="w-10 h-10 rounded-full inline-block ml-3"
-        />
-      )}
-    </div>
-  );
-};
 
 const Main = () => {
   const { onSent, loading, input, setInput, history, responses } =
