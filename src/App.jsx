@@ -1,15 +1,17 @@
 import React from "react";
+import { ThemeProvider } from "./context/themeContext";
+import Sidebar from "./components/Sidebar/Sidebar";
+import Main from "./components/Main/Main";
 
-import Sidebar from "./components/Sidebar/Sidebar.jsx";
-import Main from "./components/Main/Main.jsx";
-
-const App = () => {
+function App() {
   return (
-    <>
-      <Sidebar />
-      <Main />
-    </>
+    <ThemeProvider>
+      <div className="flex">
+        <Sidebar />
+        <Main />
+      </div>
+    </ThemeProvider>
   );
-};
+}
 
 export default App;

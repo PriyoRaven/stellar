@@ -50,3 +50,61 @@
         background-position: 800px 0;
     }
 }
+
+:root {
+    --color-primary-100: #f0f4f9;
+    --color-primary-200: #e6eaf1;
+    --color-primary-300: #c4c7c5;
+    --color-text: #000000;
+    --color-background: #ffffff;
+}
+
+[data-theme="dark"] {
+    --color-primary-100: #2a2a2a;
+    --color-primary-200: #3a3a3a;
+    --color-primary-300: #4a4a4a;
+    --color-text: #ffffff;
+    --color-background: #1a1a1a;
+}
+
+[data-theme="blue"] {
+    --color-primary-100: #e6f0ff;
+    --color-primary-200: #bdd9ff;
+    --color-primary-300: #3b82f6;
+    --color-text: #1a365d;
+    --color-background: #f0f7ff;
+}
+
+[data-theme="yellow"] {
+    --color-primary-100: #fef9e7;
+    --color-primary-200: #fdf3cf;
+    --color-primary-300: #fbbf24;
+    --color-text: #713f12;
+    --color-background: #fffbeb;
+}
+
+[data-theme="red"] {
+    --color-primary-100: #fef2f2;
+    --color-primary-200: #fecaca;
+    --color-primary-300: #ef4444;
+    --color-text: #7f1d1d;
+    --color-background: #fff5f5;
+}
+
+/* Apply theme colors to existing classes */
+.bg-primary-100 {
+    background-color: var(--color-primary-100);
+}
+
+.bg-primary-200 {
+    background-color: var(--color-primary-200);
+}
+
+.bg-primary-300 {
+    background-color: var(--color-primary-300);
+}
+
+body {
+    color: var(--color-text);
+    background-color: var(--color-background);
+}

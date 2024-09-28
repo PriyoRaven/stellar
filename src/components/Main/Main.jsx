@@ -17,7 +17,7 @@ const Main = () => {
   }, [history, responses]);
 
   return (
-    <div className="this-main flex-1 min-h-screen pb-28 relative">
+    <div className="this-main flex-1 min-h-screen pb-28 relative bg-background text-text">
       <div className="this-nav flex justify-between items-center text-xl p-5 text-lime-900">
         <p>Stellar</p>
         <img className="w-10 rounded-full" src={assets.user_icon} alt="" />

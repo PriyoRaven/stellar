@@ -7,7 +7,7 @@ import ContextProvider from "./context/context.jsx";
 
 createRoot(document.getElementById("root")).render(
   <ContextProvider>
-    <div className="min-h-screen m-0 p-0 flex box-border">
+    <div>
       <App />
     </div>
   </ContextProvider>
