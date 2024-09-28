@@ -28,7 +28,7 @@ const ThemePopup = ({ onClose, onSelectTheme }) => {
             <button
               key={theme.name}
               onClick={() => onSelectTheme(theme.name.toLowerCase())}
-              className="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100"
+              className="flex items-center space-x-2 p-2 rounded-md hover:bg-gray-500"
             >
               <div
                 className="w-6 h-6 rounded-full border border-gray-300"
