@@ -4,6 +4,7 @@ import { IoHelp, IoMenu, IoSettings } from "react-icons/io5";
 import { FaPlus } from "react-icons/fa";
 import { CiChat1 } from "react-icons/ci";
 import { RxCountdownTimer } from "react-icons/rx";
+import { MdColorLens } from "react-icons/md";
 
 const Sidebar = () => {
   const [extended, setExtended] = useState(false);
@@ -83,6 +84,13 @@ const Sidebar = () => {
       <div
         className={`flex flex-col space-y-1 ${extended ? "" : "items-center"}`}
       >
+        <Button
+          icon={MdColorLens}
+          text="Themes"
+          className={`${extended ? "" : "justify-center"}`}
+          showText={extended}
+          fadeIn={showBottomText}
+        />
         <Button
           icon={IoHelp}
           text="Help"
