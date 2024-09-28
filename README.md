@@ -1,2 +1,3 @@
 # stellar
- A project to understand tailwindcss and also trying out gemini api.
+
+A project to understand tailwindcss and also trying out google generative api.

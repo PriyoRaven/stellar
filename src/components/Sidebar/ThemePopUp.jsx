@@ -8,11 +8,12 @@ const ThemePopup = ({ onClose, onSelectTheme }) => {
     { name: "Blue", color: "#3b82f6" },
     { name: "Yellow", color: "#fbbf24" },
     { name: "Red", color: "#ef4444" },
+    { name: "Green", color: "#10b981" },
   ];
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-80">
+      <div className="bg-zinc-400 rounded-lg p-6 w-80">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Select Theme</h2>
           <button

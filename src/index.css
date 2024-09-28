@@ -63,32 +63,40 @@
     --color-primary-100: #2a2a2a;
     --color-primary-200: #3a3a3a;
     --color-primary-300: #4a4a4a;
-    --color-text: #ffffff;
+    --color-text: #e4e4e4;
     --color-background: #1a1a1a;
 }
 
 [data-theme="blue"] {
-    --color-primary-100: #e6f0ff;
-    --color-primary-200: #bdd9ff;
-    --color-primary-300: #3b82f6;
-    --color-text: #1a365d;
-    --color-background: #f0f7ff;
+    --color-primary-100: #cfdff7;
+    --color-primary-200: #a4c8fb;
+    --color-primary-300: #206de9;
+    --color-text: #1e3f6e;
+    --color-background: #ebf5ff;
 }
 
 [data-theme="yellow"] {
-    --color-primary-100: #fef9e7;
-    --color-primary-200: #fdf3cf;
-    --color-primary-300: #fbbf24;
-    --color-text: #713f12;
-    --color-background: #fffbeb;
+    --color-primary-100: #fcf2cd;
+    --color-primary-200: #fae9ae;
+    --color-primary-300: #fcc333;
+    --color-text: #88470e;
+    --color-background: #f9f4e0;
 }
 
 [data-theme="red"] {
-    --color-primary-100: #fef2f2;
-    --color-primary-200: #fecaca;
-    --color-primary-300: #ef4444;
-    --color-text: #7f1d1d;
-    --color-background: #fff5f5;
+    --color-primary-100: #f8c1c1;
+    --color-primary-200: #fa9d9d;
+    --color-primary-300: #ff3232;
+    --color-text: #880000;
+    --color-background: #fadede;
+}
+
+[data-theme="green"] {
+    --color-primary-100: #d9f7d9;
+    --color-primary-200: #b3f0b3;
+    --color-primary-300: #00e600;
+    --color-text: #006600;
+    --color-background: #e6ffe6;
 }
 
 /* Apply theme colors to existing classes */

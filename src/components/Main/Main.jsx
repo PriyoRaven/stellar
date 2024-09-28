@@ -18,7 +18,7 @@ const Main = () => {
 
   return (
     <div className="this-main flex-1 min-h-screen pb-28 relative bg-background text-text">
-      <div className="this-nav flex justify-between items-center text-xl p-5 text-lime-900">
+      <div className="this-nav flex justify-between items-center text-xl p-5 font-bold text-amber-600">
         <p>Stellar</p>
         <img className="w-10 rounded-full" src={assets.user_icon} alt="" />
       </div>
@@ -88,7 +88,7 @@ const Main = () => {
               placeholder="Enter your prompt here"
             />
             <div className="flex justify-between items-center cursor-pointer gap-3">
-              <span className="pl-2 pr-3 py-2 hover:bg-green-300 hover:scale-110 rounded-full transition-all duration-300">
+              <span className="pl-2 pr-3 py-2 hover:bg-amber-300 hover:scale-110 rounded-full transition-all duration-300">
                 <GrSend onClick={() => onSent()} size={25} />
               </span>
             </div>
