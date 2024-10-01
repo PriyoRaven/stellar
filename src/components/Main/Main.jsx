@@ -8,13 +8,23 @@ import ChatMessage from "./ChatMessage";
 import { Context } from "../../context/context";
 
 const Main = () => {
-  const { onSent, loading, input, setInput, history, responses } =
-    useContext(Context);
+  const {
+    onSent,
+    loading,
+    input,
+    setInput,
+    conversations,
+    currentConversationId,
+  } = useContext(Context);
   const chatEndRef = useRef(null);
+
+  const currentConversation = conversations.find(
+    (conv) => conv.id === currentConversationId
+  ) || { history: [], responses: [] };
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [history, responses]);
+  }, [currentConversation.history, currentConversation.responses]);
 
   return (
     <div className="this-main flex-1 min-h-screen pb-28 relative bg-background text-text">
@@ -23,7 +33,7 @@ const Main = () => {
         <img className="w-10 rounded-full" src={assets.user_icon} alt="" />
       </div>
       <div className="main-container max-w-5xl m-auto">
-        {history.length === 0 ? (
+        {currentConversation.history.length === 0 ? (
           <>
             <div className="greet my-12 mx-0 text-6xl font-semibold p-5 text-primary-300">
               <p>
@@ -60,11 +70,14 @@ const Main = () => {
             className="result py-0 overflow-y-scroll the-scrollbar"
             style={{ paddingLeft: "5%", paddingRight: "5%", maxHeight: "70vh" }}
           >
-            {history.map((message, index) => (
+            {currentConversation.history.map((message, index) => (
               <ChatMessage
                 key={index}
                 message={message}
-                processedResponse={responses[Math.floor(index / 2)]?.text || ""}
+                processedResponse={
+                  currentConversation.responses[Math.floor(index / 2)]?.text ||
+                  ""
+                }
               />
             ))}
             {loading && (

@@ -6,11 +6,12 @@ export const Context = createContext();
 const ContextProvider = ({ children }) => {
   const [input, setInput] = useState("");
   const [recentPrompt, setRecentPrompt] = useState("");
-  const [prevPrompt, setPrevPrompt] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [history, setHistory] = useState([]);
-  const [responses, setResponses] = useState([]);
+  const [conversations, setConversations] = useState([
+    { id: 1, history: [], responses: [] },
+  ]);
+  const [currentConversationId, setCurrentConversationId] = useState(1);
 
   const delayParam = (text, callback) => {
     const segments = text.split(/(\*\*.*?\*\*|\s+)/);
@@ -60,29 +61,58 @@ const ContextProvider = ({ children }) => {
       setRecentPrompt(input);
 
       const userMessage = { role: "user", parts: [{ text: input }] };
-      const updatedHistory = [...history, userMessage];
-      setHistory(updatedHistory);
 
-      const response = await run(input, updatedHistory);
+      setConversations((prevConversations) => {
+        const updatedConversations = prevConversations.map((conv) => {
+          if (conv.id === currentConversationId) {
+            return {
+              ...conv,
+              history: [...conv.history, userMessage],
+            };
+          }
+          return conv;
+        });
+        return updatedConversations;
+      });
 
-      const assistantMessage = { role: "model", parts: [{ text: response }] };
-      setHistory((prevHistory) => [...prevHistory, assistantMessage]);
-
-      // Add a new response object to the responses array
-      setResponses((prevResponses) => [
-        ...prevResponses,
-        { text: "", isComplete: false },
+      const currentConversation = conversations.find(
+        (conv) => conv.id === currentConversationId
+      );
+      const response = await run(input, [
+        ...currentConversation.history,
+        userMessage,
       ]);
 
-      // Start the animation for the new response
+      const assistantMessage = { role: "model", parts: [{ text: response }] };
+
+      setConversations((prevConversations) => {
+        const updatedConversations = prevConversations.map((conv) => {
+          if (conv.id === currentConversationId) {
+            return {
+              ...conv,
+              history: [...conv.history, assistantMessage],
+              responses: [...conv.responses, { text: "", isComplete: false }],
+            };
+          }
+          return conv;
+        });
+        return updatedConversations;
+      });
+
       delayParam(response, (processedText, isComplete = false) => {
-        setResponses((prevResponses) => {
-          const newResponses = [...prevResponses];
-          newResponses[newResponses.length - 1] = {
-            text: processedText,
-            isComplete,
-          };
-          return newResponses;
+        setConversations((prevConversations) => {
+          const updatedConversations = prevConversations.map((conv) => {
+            if (conv.id === currentConversationId) {
+              const newResponses = [...conv.responses];
+              newResponses[newResponses.length - 1] = {
+                text: processedText,
+                isComplete,
+              };
+              return { ...conv, responses: newResponses };
+            }
+            return conv;
+          });
+          return updatedConversations;
         });
       });
     } catch (error) {
@@ -92,9 +122,23 @@ const ContextProvider = ({ children }) => {
     }
   };
 
+  const startNewChat = () => {
+    const newId = conversations.length + 1;
+    setConversations([
+      ...conversations,
+      { id: newId, history: [], responses: [] },
+    ]);
+    setCurrentConversationId(newId);
+    setInput("");
+    setShowResult(false);
+  };
+
+  const switchConversation = (id) => {
+    setCurrentConversationId(id);
+    setShowResult(true);
+  };
+
   const contextValue = {
-    prevPrompt,
-    setPrevPrompt,
     onSent,
     setRecentPrompt,
     recentPrompt,
@@ -102,8 +146,10 @@ const ContextProvider = ({ children }) => {
     loading,
     input,
     setInput,
-    history,
-    responses,
+    conversations,
+    currentConversationId,
+    startNewChat,
+    switchConversation,
   };
 
   return <Context.Provider value={contextValue}>{children}</Context.Provider>;

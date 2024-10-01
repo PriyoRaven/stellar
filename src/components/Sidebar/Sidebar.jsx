@@ -7,6 +7,7 @@ import { RxCountdownTimer } from "react-icons/rx";
 import { MdColorLens } from "react-icons/md";
 import ThemePopup from "./ThemePopUp";
 import { ThemeContext } from "../../context/themeContext";
+import { Context } from "../../context/context";
 
 const Sidebar = () => {
   const [extended, setExtended] = useState(false);
@@ -14,6 +15,12 @@ const Sidebar = () => {
   const [showBottomText, setShowBottomText] = useState(false);
   const [showThemePopup, setShowThemePopup] = useState(false);
   const { theme, setTheme } = useContext(ThemeContext);
+  const {
+    conversations,
+    currentConversationId,
+    startNewChat,
+    switchConversation,
+  } = useContext(Context);
 
   const toggleSidebar = () => {
     setExtended((prev) => {
@@ -62,6 +69,7 @@ const Sidebar = () => {
             className={`inline-flex items-center py-2.5 px-3 gap-2.5 bg-primary-200 rounded-2xl text-sm text-text cursor-pointer hover:bg-primary-300 transition-all duration-300 ${
               extended ? "" : "justify-center"
             }`}
+            onClick={startNewChat}
           >
             <FaPlus size={20} />
             {extended && (
@@ -77,15 +85,28 @@ const Sidebar = () => {
           {extended && (
             <div className="flex flex-col">
               <p className="mt-7 mb-5 text-text">Recent</p>
-              <Button
-                icon={CiChat1}
-                text="What is react..."
-                className={`flex items-center ${
-                  extended ? "" : "justify-center"
-                }`}
-                showText={extended}
-                fadeIn={showBottomText}
-              />
+              {conversations
+                .slice()
+                .reverse()
+                .map((conv) => (
+                  <Button
+                    key={conv.id}
+                    icon={CiChat1}
+                    text={
+                      conv.history.length > 0
+                        ? conv.history[0].parts[0].text.slice(0, 20) + "..."
+                        : "New Chat"
+                    }
+                    className={`flex items-center ${
+                      extended ? "" : "justify-center"
+                    } ${
+                      conv.id === currentConversationId ? "bg-primary-200" : ""
+                    }`}
+                    showText={extended}
+                    fadeIn={showBottomText}
+                    onClick={() => switchConversation(conv.id)}
+                  />
+                ))}
             </div>
           )}
         </div>
