@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import Button from "../Button";
 import { IoHelp, IoMenu, IoSettings } from "react-icons/io5";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaTrash } from "react-icons/fa";
 import { CiChat1 } from "react-icons/ci";
 import { RxCountdownTimer } from "react-icons/rx";
 import { MdColorLens } from "react-icons/md";
@@ -20,6 +20,7 @@ const Sidebar = () => {
     currentConversationId,
     startNewChat,
     switchConversation,
+    deleteConversation,
   } = useContext(Context);
 
   const toggleSidebar = () => {
@@ -85,28 +86,40 @@ const Sidebar = () => {
           {extended && (
             <div className="flex flex-col">
               <p className="mt-7 mb-5 text-text">Recent</p>
-              {conversations
-                .slice()
-                .reverse()
-                .map((talk) => (
-                  <Button
-                    key={talk.id}
-                    icon={CiChat1}
-                    text={
-                      talk.history.length > 0
-                        ? talk.history[0].parts[0].text.slice(0, 20) + "..."
-                        : "New Chat"
-                    }
-                    className={`flex items-center ${
-                      extended ? "" : "justify-center"
-                    } ${
-                      talk.id === currentConversationId ? "bg-primary-200" : ""
-                    }`}
-                    showText={extended}
-                    fadeIn={showBottomText}
-                    onClick={() => switchConversation(conv.id)}
-                  />
-                ))}
+              <div className="h-80 overflow-y-auto the-scrollbar">
+                {conversations
+                  .slice()
+                  .reverse()
+                  .map((talk) => (
+                    <div
+                      key={talk.id}
+                      className={`flex justify-between cursor-pointer rounded-full py-0.5 px-2 transition-all duration-300 items-center hover:bg-primary-200 ${
+                        extended ? "" : "justify-center"
+                      } ${
+                        talk.id === currentConversationId
+                          ? "bg-primary-200"
+                          : ""
+                      }`}
+                      onClick={() => switchConversation(talk.id)}
+                    >
+                      <Button
+                        icon={CiChat1}
+                        text={
+                          talk.history.length > 0
+                            ? talk.history[0].parts[0].text.slice(0, 10) + "..."
+                            : "New Chat"
+                        }
+                        showText={extended}
+                        fadeIn={showBottomText}
+                      />
+                      <FaTrash
+                        size={16}
+                        className="mx-2 hover:bg-primary-200  cursor-pointer hover:text-red-500 transition-colors duration-300"
+                        onClick={() => deleteConversation(talk.id)}
+                      />
+                    </div>
+                  ))}
+              </div>
             </div>
           )}
         </div>

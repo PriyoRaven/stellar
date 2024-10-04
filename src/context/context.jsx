@@ -137,6 +137,15 @@ const ContextProvider = ({ children }) => {
     setCurrentConversationId(id);
     setShowResult(true);
   };
+  const deleteConversation = (id) => {
+    setConversations((prevConversations) =>
+      prevConversations.filter((conversation) => conversation.id !== id)
+    );
+    if (currentConversationId === id && conversations.length > 1) {
+      const nextConversation = conversations.find((talk) => talk.id !== id);
+      setCurrentConversationId(nextConversation.id);
+    }
+  };
 
   const contextValue = {
     onSent,
@@ -150,6 +159,7 @@ const ContextProvider = ({ children }) => {
     currentConversationId,
     startNewChat,
     switchConversation,
+    deleteConversation,
   };
 
   return <Context.Provider value={contextValue}>{children}</Context.Provider>;

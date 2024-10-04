@@ -19,7 +19,7 @@ const Main = () => {
   const chatEndRef = useRef(null);
 
   const currentConversation = conversations.find(
-    (conv) => conv.id === currentConversationId
+    (talk) => talk.id === currentConversationId
   ) || { history: [], responses: [] };
 
   useEffect(() => {
@@ -99,6 +99,9 @@ const Main = () => {
               className="flex-1 bg-transparent border-0 outline-none p-2 text-lg"
               type="text"
               placeholder="Enter your prompt here"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") onSent();
+              }}
             />
             <div className="flex justify-between items-center cursor-pointer gap-3">
               <span className="pl-2 pr-3 py-2 hover:bg-amber-300 hover:scale-110 rounded-full transition-all duration-300">

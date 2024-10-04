@@ -11,7 +11,7 @@ const Button = ({
   return (
     <div
       onClick={onClick}
-      className={`flex items-center gap-2.5 p-2.5 rounded-3xl text-text cursor-pointer hover:bg-primary-200 transition-all duration-300 ${className}`}
+      className={`flex mr-2 items-center gap-2.5 p-2.5 rounded-3xl text-text cursor-pointer hover:bg-primary-200 transition-all duration-300 ${className}`}
     >
       {Icon && <Icon size={20} />}
       {showText && (
