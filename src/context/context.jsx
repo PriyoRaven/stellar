@@ -63,20 +63,20 @@ const ContextProvider = ({ children }) => {
       const userMessage = { role: "user", parts: [{ text: input }] };
 
       setConversations((prevConversations) => {
-        const updatedConversations = prevConversations.map((conv) => {
-          if (conv.id === currentConversationId) {
+        const updatedConversations = prevConversations.map((talk) => {
+          if (talk.id === currentConversationId) {
             return {
-              ...conv,
-              history: [...conv.history, userMessage],
+              ...talk,
+              history: [...talk.history, userMessage],
             };
           }
-          return conv;
+          return talk;
         });
         return updatedConversations;
       });
 
       const currentConversation = conversations.find(
-        (conv) => conv.id === currentConversationId
+        (talk) => talk.id === currentConversationId
       );
       const response = await run(input, [
         ...currentConversation.history,
@@ -86,31 +86,31 @@ const ContextProvider = ({ children }) => {
       const assistantMessage = { role: "model", parts: [{ text: response }] };
 
       setConversations((prevConversations) => {
-        const updatedConversations = prevConversations.map((conv) => {
-          if (conv.id === currentConversationId) {
+        const updatedConversations = prevConversations.map((talk) => {
+          if (talk.id === currentConversationId) {
             return {
-              ...conv,
-              history: [...conv.history, assistantMessage],
-              responses: [...conv.responses, { text: "", isComplete: false }],
+              ...talk,
+              history: [...talk.history, assistantMessage],
+              responses: [...talk.responses, { text: "", isComplete: false }],
             };
           }
-          return conv;
+          return talk;
         });
         return updatedConversations;
       });
 
       delayParam(response, (processedText, isComplete = false) => {
         setConversations((prevConversations) => {
-          const updatedConversations = prevConversations.map((conv) => {
-            if (conv.id === currentConversationId) {
-              const newResponses = [...conv.responses];
+          const updatedConversations = prevConversations.map((talk) => {
+            if (talk.id === currentConversationId) {
+              const newResponses = [...talk.responses];
               newResponses[newResponses.length - 1] = {
                 text: processedText,
                 isComplete,
               };
-              return { ...conv, responses: newResponses };
+              return { ...talk, responses: newResponses };
             }
-            return conv;
+            return talk;
           });
           return updatedConversations;
         });
