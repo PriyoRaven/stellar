@@ -88,19 +88,19 @@ const Sidebar = () => {
               {conversations
                 .slice()
                 .reverse()
-                .map((conv) => (
+                .map((talk) => (
                   <Button
-                    key={conv.id}
+                    key={talk.id}
                     icon={CiChat1}
                     text={
-                      conv.history.length > 0
-                        ? conv.history[0].parts[0].text.slice(0, 20) + "..."
+                      talk.history.length > 0
+                        ? talk.history[0].parts[0].text.slice(0, 20) + "..."
                         : "New Chat"
                     }
                     className={`flex items-center ${
                       extended ? "" : "justify-center"
                     } ${
-                      conv.id === currentConversationId ? "bg-primary-200" : ""
+                      talk.id === currentConversationId ? "bg-primary-200" : ""
                     }`}
                     showText={extended}
                     fadeIn={showBottomText}
