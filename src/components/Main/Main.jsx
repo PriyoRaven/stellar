@@ -1,6 +1,6 @@
 import React, { useContext, useRef, useEffect } from "react";
 import { assets } from "../../assets/assets";
-import Card from "../Card";
+import Card from "../UI/Card";
 import { GrSend } from "react-icons/gr";
 import { IoBulbOutline, IoCodeSlash, IoCompassOutline } from "react-icons/io5";
 import { FiMessageCircle } from "react-icons/fi";

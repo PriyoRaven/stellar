@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import Button from "../Button";
+import Button from "../UI/Button";
 import { IoHelp, IoMenu, IoSettings } from "react-icons/io5";
 import { FaPlus, FaTrash } from "react-icons/fa";
 import { CiChat1 } from "react-icons/ci";
@@ -85,7 +85,7 @@ const Sidebar = () => {
           </div>
           {extended && (
             <div className="flex flex-col">
-              <p className="mt-7 mb-5 text-text">Recent</p>
+              <p className="mt-7 mb-5 text-text">Recents</p>
               <div className="h-80 overflow-y-auto the-scrollbar">
                 {conversations
                   .slice()
@@ -140,7 +140,7 @@ const Sidebar = () => {
           />
           <Button
             icon={IoHelp}
-            text="Help"
+            text="About"
             className={`${extended ? "" : "justify-center"}`}
             showText={extended}
             fadeIn={showBottomText}
