@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Button from "../UI/Button";
 import { IoHelp, IoMenu, IoSettings } from "react-icons/io5";
 import { FaPlus, FaTrash } from "react-icons/fa";
@@ -23,17 +24,13 @@ const Sidebar = () => {
     deleteConversation,
   } = useContext(Context);
 
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const toggleSidebar = () => {
-    setExtended((prev) => {
-      if (!prev) {
-        setShowText(false);
-        setShowBottomText(false);
-      } else {
-        setShowText(false);
-        setShowBottomText(false);
-      }
-      return !prev;
-    });
+    setExtended((prev) => !prev);
+    setShowText(false);
+    setShowBottomText(false);
   };
 
   const handleThemeSelection = (selectedTheme) => {
@@ -52,6 +49,13 @@ const Sidebar = () => {
     }
   }, [extended]);
 
+  const handleNewChat = () => {
+    startNewChat();
+    navigate("/");
+  };
+
+  const isActive = (path) => location.pathname === path;
+
   return (
     <>
       <div
@@ -59,7 +63,6 @@ const Sidebar = () => {
           extended ? "w-64" : "w-20"
         }`}
       >
-        {/* Top part */}
         <div className="top">
           <IoMenu
             size={45}
@@ -70,7 +73,7 @@ const Sidebar = () => {
             className={`inline-flex items-center py-2.5 px-3 gap-2.5 bg-primary-200 rounded-2xl text-sm text-text cursor-pointer hover:bg-primary-300 transition-all duration-300 ${
               extended ? "" : "justify-center"
             }`}
-            onClick={startNewChat}
+            onClick={handleNewChat}
           >
             <FaPlus size={20} />
             {extended && (
@@ -100,7 +103,10 @@ const Sidebar = () => {
                           ? "bg-primary-200"
                           : ""
                       }`}
-                      onClick={() => switchConversation(talk.id)}
+                      onClick={() => {
+                        switchConversation(talk.id);
+                        navigate("/");
+                      }}
                     >
                       <Button
                         icon={CiChat1}
@@ -114,8 +120,11 @@ const Sidebar = () => {
                       />
                       <FaTrash
                         size={16}
-                        className="mx-2 hover:bg-primary-200  cursor-pointer hover:text-red-500 transition-colors duration-300"
-                        onClick={() => deleteConversation(talk.id)}
+                        className="mx-2 hover:bg-primary-200 cursor-pointer hover:text-red-500 transition-colors duration-300"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteConversation(talk.id);
+                        }}
                       />
                     </div>
                   ))}
@@ -124,7 +133,6 @@ const Sidebar = () => {
           )}
         </div>
 
-        {/* Bottom part */}
         <div
           className={`flex flex-col space-y-1 ${
             extended ? "" : "items-center"
@@ -141,24 +149,33 @@ const Sidebar = () => {
           <Button
             icon={IoHelp}
             text="About"
-            className={`${extended ? "" : "justify-center"}`}
+            className={`${extended ? "" : "justify-center"} ${
+              isActive("/about") ? "bg-primary-200" : ""
+            }`}
             showText={extended}
             fadeIn={showBottomText}
+            onClick={() => navigate("/about")}
           />
           <Button
             icon={RxCountdownTimer}
             text="Activity"
-            className={`${extended ? "" : "justify-center"}`}
+            className={`${extended ? "" : "justify-center"} ${
+              isActive("/activity") ? "bg-primary-200" : ""
+            }`}
             showText={extended}
             fadeIn={showBottomText}
+            onClick={() => navigate("/activity")}
           />
-          <Button
+          {/* <Button
             icon={IoSettings}
             text="Settings"
-            className={`${extended ? "" : "justify-center"}`}
+            className={`${extended ? "" : "justify-center"} ${
+              isActive("/settings") ? "bg-primary-200" : ""
+            }`}
             showText={extended}
             fadeIn={showBottomText}
-          />
+            onClick={() => navigate("/settings")}
+          /> */}
         </div>
       </div>
 
