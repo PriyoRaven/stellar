@@ -2,13 +2,14 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Button from "../UI/Button";
 import { IoHelp, IoMenu, IoSettings } from "react-icons/io5";
-import { FaPlus, FaTrash } from "react-icons/fa";
+import { FaGithub, FaLinkedin, FaPlus, FaTrash } from "react-icons/fa";
 import { CiChat1 } from "react-icons/ci";
 import { RxCountdownTimer } from "react-icons/rx";
 import { MdColorLens } from "react-icons/md";
 import ThemePopup from "./ThemePopUp";
 import { ThemeContext } from "../../context/themeContext";
 import { Context } from "../../context/context";
+import { FaXTwitter } from "react-icons/fa6";
 
 const Sidebar = () => {
   const [extended, setExtended] = useState(false);
@@ -176,6 +177,36 @@ const Sidebar = () => {
             fadeIn={showBottomText}
             onClick={() => navigate("/settings")}
           /> */}
+
+          {/* Social Media Buttons */}
+          {extended && (
+            <div className={`flex gap-2 justify-evenly items-center mt-5`}>
+              <Button
+                icon={FaXTwitter}
+                className="justify-center pr-0 hover:text-blue-400"
+                onClick={() =>
+                  window.open("https://x.com/PriyadarsiHald2", "_blank")
+                }
+              />
+              <Button
+                icon={FaGithub}
+                className="justify-center pr-0"
+                onClick={() =>
+                  window.open("https://github.com/PriyoRaven", "_blank")
+                }
+              />
+              <Button
+                icon={FaLinkedin}
+                className="justify-center pr-0 hover:text-blue-500"
+                onClick={() =>
+                  window.open(
+                    "https://www.linkedin.com/in/priyadarsi-halder-786a8a237/",
+                    "_blank"
+                  )
+                }
+              />
+            </div>
+          )}
         </div>
       </div>
 
