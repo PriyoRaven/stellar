@@ -1,17 +1,92 @@
-import { useState, createContext, useEffect } from "react";
-import run from "../config/gemini";
+import { useState, createContext, useEffect, useCallback } from "react";
+import run, { generateSuggestions, runWithGrounding, AI_PERSONAS } from "../config/gemini";
+import { v4 as uuidv4 } from "uuid";
 
 export const Context = createContext();
+
+// LocalStorage keys
+const STORAGE_KEYS = {
+  CONVERSATIONS: "stellar_conversations",
+  CURRENT_ID: "stellar_current_conversation_id",
+  PERSONA: "stellar_persona",
+};
 
 const ContextProvider = ({ children }) => {
   const [input, setInput] = useState("");
   const [recentPrompt, setRecentPrompt] = useState("");
   const [showResult, setShowResult] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [conversations, setConversations] = useState([
-    { id: 1, history: [], responses: [] },
-  ]);
-  const [currentConversationId, setCurrentConversationId] = useState(1);
+  const [suggestions, setSuggestions] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [currentPersona, setCurrentPersona] = useState("default");
+  const [attachments, setAttachments] = useState([]);
+  const [webSearchEnabled, setWebSearchEnabled] = useState(false);
+  const [searchSources, setSearchSources] = useState([]);
+
+  // Initialize conversations from localStorage or default
+  const [conversations, setConversations] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.CONVERSATIONS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.length > 0 ? parsed : [{ id: uuidv4(), title: "New Chat", history: [], responses: [] }];
+      }
+    } catch (e) {
+      console.error("Error loading conversations:", e);
+    }
+    return [{ id: uuidv4(), title: "New Chat", history: [], responses: [] }];
+  });
+
+  const [currentConversationId, setCurrentConversationId] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.CURRENT_ID);
+      if (saved && conversations.some(c => c.id === saved)) {
+        return saved;
+      }
+    } catch (e) {
+      console.error("Error loading current conversation:", e);
+    }
+    return conversations[0]?.id;
+  });
+
+  // Load persona from localStorage
+  useEffect(() => {
+    try {
+      const savedPersona = localStorage.getItem(STORAGE_KEYS.PERSONA);
+      if (savedPersona && AI_PERSONAS[savedPersona]) {
+        setCurrentPersona(savedPersona);
+      }
+    } catch (e) {
+      console.error("Error loading persona:", e);
+    }
+  }, []);
+
+  // Save conversations to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.CONVERSATIONS, JSON.stringify(conversations));
+    } catch (e) {
+      console.error("Error saving conversations:", e);
+    }
+  }, [conversations]);
+
+  // Save current conversation ID
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.CURRENT_ID, currentConversationId);
+    } catch (e) {
+      console.error("Error saving current ID:", e);
+    }
+  }, [currentConversationId]);
+
+  // Save persona preference
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.PERSONA, currentPersona);
+    } catch (e) {
+      console.error("Error saving persona:", e);
+    }
+  }, [currentPersona]);
 
   const delayParam = (text, callback) => {
     const segments = text.split(/(\*\*.*?\*\*|\s+)/);
@@ -51,22 +126,68 @@ const ContextProvider = ({ children }) => {
     processSegment();
   };
 
-  const onSent = async () => {
-    if (!input.trim()) return;
+  // Generate smart suggestions after AI response
+  const fetchSuggestions = useCallback(async (conversationHistory) => {
+    setLoadingSuggestions(true);
+    try {
+      // Build context from last few messages
+      const recentMessages = conversationHistory.slice(-6);
+      const context = recentMessages
+        .map(msg => `${msg.role === "user" ? "User" : "AI"}: ${msg.parts[0].text}`)
+        .join("\n");
+
+      const newSuggestions = await generateSuggestions(context, currentPersona);
+      setSuggestions(newSuggestions);
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+      setSuggestions([]);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  }, [currentPersona]);
+
+  const onSent = async (customPrompt = null) => {
+    const promptText = customPrompt || input;
+    if (!promptText.trim() && attachments.length === 0) return;
 
     try {
       setLoading(true);
+      setSuggestions([]);
+      setSearchSources([]);
       setInput("");
       setShowResult(true);
-      setRecentPrompt(input);
+      setRecentPrompt(promptText);
 
-      const userMessage = { role: "user", parts: [{ text: input }] };
+      // Build user message with attachments
+      const userParts = [{ text: promptText }];
+      for (const att of attachments) {
+        userParts.push({
+          inlineData: {
+            mimeType: att.mimeType,
+            data: att.data,
+          }
+        });
+      }
+
+      const userMessage = {
+        role: "user",
+        parts: userParts,
+        attachmentPreviews: attachments.map(a => ({ name: a.name, type: a.type }))
+      };
+
+      // Clear attachments after adding to message
+      setAttachments([]);
 
       setConversations((prevConversations) => {
         const updatedConversations = prevConversations.map((talk) => {
           if (talk.id === currentConversationId) {
+            // Auto-set title from first message
+            const newTitle = talk.history.length === 0
+              ? promptText.slice(0, 30) + (promptText.length > 30 ? "..." : "")
+              : talk.title;
             return {
               ...talk,
+              title: newTitle,
               history: [...talk.history, userMessage],
             };
           }
@@ -78,12 +199,38 @@ const ContextProvider = ({ children }) => {
       const currentConversation = conversations.find(
         (talk) => talk.id === currentConversationId
       );
-      const response = await run(input, [
-        ...currentConversation.history,
-        userMessage,
-      ]);
 
-      const assistantMessage = { role: "model", parts: [{ text: response }] };
+      let response;
+      let sources = [];
+
+      if (webSearchEnabled) {
+        // Use grounded search
+        const groundedResult = await runWithGrounding(
+          promptText,
+          [...currentConversation.history, userMessage],
+          currentPersona
+        );
+        response = groundedResult.text;
+        sources = groundedResult.sources;
+        setSearchSources(sources);
+      } else {
+        // Regular chat
+        response = await run(
+          promptText,
+          [...currentConversation.history, userMessage],
+          currentPersona,
+          attachments
+        );
+      }
+
+      const assistantMessage = {
+        role: "model",
+        parts: [{ text: response }],
+        sources: sources
+      };
+
+      // Start loading suggestions immediately (don't wait for typing animation)
+      fetchSuggestions([...currentConversation.history, userMessage, assistantMessage]);
 
       setConversations((prevConversations) => {
         const updatedConversations = prevConversations.map((talk) => {
@@ -117,26 +264,34 @@ const ContextProvider = ({ children }) => {
       });
     } catch (error) {
       console.error("Error: ", error);
+      setSuggestions([]);
     } finally {
       setLoading(false);
     }
   };
 
   const startNewChat = () => {
-    const newId = conversations.length + 1;
+    const newId = uuidv4();
     setConversations([
       ...conversations,
-      { id: newId, history: [], responses: [] },
+      { id: newId, title: "New Chat", history: [], responses: [] },
     ]);
     setCurrentConversationId(newId);
     setInput("");
     setShowResult(false);
+    setSuggestions([]);
+    setAttachments([]);
+    setSearchSources([]);
   };
 
   const switchConversation = (id) => {
     setCurrentConversationId(id);
     setShowResult(true);
+    setSuggestions([]);
+    setAttachments([]);
+    setSearchSources([]);
   };
+
   const deleteConversation = (id) => {
     setConversations((prevConversations) =>
       prevConversations.filter((conversation) => conversation.id !== id)
@@ -145,6 +300,30 @@ const ContextProvider = ({ children }) => {
       const nextConversation = conversations.find((talk) => talk.id !== id);
       setCurrentConversationId(nextConversation.id);
     }
+  };
+
+  const renameConversation = (id, newTitle) => {
+    setConversations((prevConversations) =>
+      prevConversations.map((talk) =>
+        talk.id === id ? { ...talk, title: newTitle } : talk
+      )
+    );
+  };
+
+  const addAttachment = (attachment) => {
+    setAttachments((prev) => [...prev, attachment]);
+  };
+
+  const removeAttachment = (index) => {
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const clearAllConversations = () => {
+    const newId = uuidv4();
+    setConversations([{ id: newId, title: "New Chat", history: [], responses: [] }]);
+    setCurrentConversationId(newId);
+    setShowResult(false);
+    setSuggestions([]);
   };
 
   const contextValue = {
@@ -160,6 +339,25 @@ const ContextProvider = ({ children }) => {
     startNewChat,
     switchConversation,
     deleteConversation,
+    renameConversation,
+    // Smart suggestions
+    suggestions,
+    loadingSuggestions,
+    setSuggestions,
+    // AI Personas
+    currentPersona,
+    setCurrentPersona,
+    personas: AI_PERSONAS,
+    // Attachments (images/PDFs)
+    attachments,
+    addAttachment,
+    removeAttachment,
+    // Web search
+    webSearchEnabled,
+    setWebSearchEnabled,
+    searchSources,
+    // Utility
+    clearAllConversations,
   };
 
   return <Context.Provider value={contextValue}>{children}</Context.Provider>;

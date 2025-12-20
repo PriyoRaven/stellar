@@ -3,29 +3,30 @@
 @tailwind utilities;
 
 /* Custom CSS */
-/* the scroll bar */
+/* the scroll bar - uses theme colors */
 .the-scrollbar::-webkit-scrollbar {
-    width: 10px;
-    height: 0rem;
+    width: 8px;
+    height: 8px;
 }
 
 .the-scrollbar::-webkit-scrollbar-track {
     background: transparent;
     border-radius: 10px;
-    transition: all 0.3s ease;
 }
 
 .the-scrollbar::-webkit-scrollbar-track:hover {
-    background: rgb(244, 243, 243);
+    background: var(--color-primary-100);
 }
 
 .the-scrollbar::-webkit-scrollbar-thumb {
-    background-color: rgb(233, 233, 233);
+    background-color: var(--color-primary-200);
     border-radius: 10px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
 }
 
 .the-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: rgb(241, 179, 36);
+    background-color: var(--color-primary-300);
     border-radius: 10px;
 }
 
@@ -112,7 +113,155 @@
     background-color: var(--color-primary-300);
 }
 
+.text-text {
+    color: var(--color-text);
+}
+
+.text-primary-300 {
+    color: var(--color-primary-300);
+}
+
+.bg-background {
+    background-color: var(--color-background);
+}
+
+.border-primary-300 {
+    border-color: var(--color-primary-300);
+}
+
 body {
     color: var(--color-text);
     background-color: var(--color-background);
+}
+
+/* Prose overrides for markdown content */
+.prose {
+    color: inherit;
+}
+
+.prose p {
+    margin: 0.5em 0;
+}
+
+.prose ul,
+.prose ol {
+    margin: 0.5em 0;
+    padding-left: 1.5em;
+}
+
+.prose li {
+    margin: 0.25em 0;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+    font-weight: 600;
+}
+
+.prose code {
+    background-color: var(--color-primary-200);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+}
+
+.prose pre {
+    margin: 0.75em 0;
+    border-radius: 0.75rem;
+    overflow-x: auto;
+}
+
+.prose pre code {
+    background: transparent;
+    padding: 0;
+}
+
+.prose blockquote {
+    border-left: 3px solid var(--color-primary-300);
+    padding-left: 1em;
+    margin: 0.75em 0;
+    font-style: italic;
+    color: var(--color-primary-300);
+}
+
+.prose table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0.75em 0;
+}
+
+.prose th,
+.prose td {
+    border: 1px solid var(--color-primary-300);
+    padding: 0.5em;
+    text-align: left;
+}
+
+.prose th {
+    background-color: var(--color-primary-100);
+    font-weight: 600;
+}
+
+/* Bounce animation for typing indicator */
+@keyframes bounce {
+
+    0%,
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-6px);
+    }
+}
+
+.animate-bounce {
+    animation: bounce 1.4s infinite ease-in-out;
+}
+
+/* Smooth transitions */
+* {
+    transition-property: background-color, border-color, color;
+    transition-duration: 150ms;
+}
+
+/* Focus styles */
+input:focus,
+button:focus {
+    outline: none;
+}
+
+/* Card hover effect */
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .cards {
+        grid-template-columns: 1fr !important;
+    }
+
+    .greet {
+        font-size: 2rem !important;
+    }
+
+    .main-container {
+        padding: 0 1rem;
+    }
+}
+
+/* Dark mode specific styles for code highlighting */
+[data-theme="dark"] .prose code {
+    background-color: #3a3a3a;
+}
+
+[data-theme="dark"] .prose pre {
+    background-color: #1e1e1e;
 }

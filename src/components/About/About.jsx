@@ -6,7 +6,8 @@ const About = () => {
       <h1 className="text-4xl font-bold mb-6">About Stellar</h1>
       <p className="mb-4">
         Stellar is an AI-powered chat application that leverages the power of
-        Gemini to provide intelligent responses to your queries.
+        Gemini to provide intelligent responses to your queries. Stellar is
+        trained by Google and was created by Priyadarsi (a.k.a. Raven).
       </p>
       <p className="mb-4">
         Our mission is to make AI accessible and helpful for everyone, providing
