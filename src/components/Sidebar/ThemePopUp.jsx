@@ -6,7 +6,7 @@ import { ThemeContext } from "../../context/themeContext";
 const ThemePopup = ({ onClose }) => {
   const canvasRef = useRef(null);
   const { hue, setHue, isDarkMode, setIsDarkMode, specialMode, setSpecialMode } = useContext(ThemeContext);
-  const [selectedHue, setSelectedHue] = useState(hue || 45); // Default amber/gold
+  const [selectedHue, setSelectedHue] = useState(hue || 45);
   const [isDragging, setIsDragging] = useState(false);
   const [selectedSpecial, setSelectedSpecial] = useState(specialMode);
 
@@ -46,7 +46,7 @@ const ThemePopup = ({ onClose }) => {
 
     // Draw selection indicator (only if no special mode selected)
     if (!selectedSpecial) {
-      const selectorAngle = (selectedHue - 90) * Math.PI / 180;
+      const selectorAngle = selectedHue * Math.PI / 180;
       const selectorRadius = radius * 0.75;
       const selectorX = centerX + Math.cos(selectorAngle) * selectorRadius;
       const selectorY = centerY + Math.sin(selectorAngle) * selectorRadius;
@@ -77,13 +77,21 @@ const ThemePopup = ({ onClose }) => {
   const getHueFromPosition = (e) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
+
+    // Calculate scale factor between CSS size and canvas pixel size
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
 
-    const x = e.clientX - rect.left - centerX;
-    const y = e.clientY - rect.top - centerY;
+    // Convert client coordinates to canvas coordinates
+    const x = (e.clientX - rect.left) * scaleX - centerX;
+    const y = (e.clientY - rect.top) * scaleY - centerY;
 
-    let angle = Math.atan2(y, x) * 180 / Math.PI + 90;
+    // Canvas angles: 0 = right (3 o'clock), goes clockwise
+    // atan2 returns -PI to PI, with 0 at right, positive going down
+    let angle = Math.atan2(y, x) * 180 / Math.PI;
     if (angle < 0) angle += 360;
 
     return Math.round(angle) % 360;
@@ -139,15 +147,15 @@ const ThemePopup = ({ onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div
-        className="bg-background rounded-2xl p-6 w-96 shadow-2xl max-h-[90vh] overflow-y-auto the-scrollbar"
+        className="bg-background rounded-2xl p-4 sm:p-6 w-full max-w-sm sm:max-w-md shadow-2xl max-h-[85vh] overflow-y-auto the-scrollbar"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-text">Choose Your Theme</h2>
+          <h2 className="text-lg sm:text-xl font-semibold text-text">Choose Your Theme</h2>
           <button
             onClick={onClose}
             className="text-primary-300 hover:text-text transition-colors p-1 rounded-full hover:bg-primary-100"
@@ -163,8 +171,8 @@ const ThemePopup = ({ onClose }) => {
             <button
               onClick={() => handleSpecialClick("pureWhite")}
               className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-xl transition-all border-2 ${selectedSpecial === "pureWhite"
-                  ? "border-gray-400 ring-2 ring-gray-300"
-                  : "border-gray-200 hover:border-gray-300"
+                ? "border-gray-400 ring-2 ring-gray-300"
+                : "border-gray-200 hover:border-gray-300"
                 }`}
               style={{ backgroundColor: "#ffffff" }}
             >
@@ -176,8 +184,8 @@ const ThemePopup = ({ onClose }) => {
             <button
               onClick={() => handleSpecialClick("pureBlack")}
               className={`flex-1 flex flex-col items-center gap-2 p-4 rounded-xl transition-all border-2 ${selectedSpecial === "pureBlack"
-                  ? "border-gray-600 ring-2 ring-gray-500"
-                  : "border-gray-700 hover:border-gray-600"
+                ? "border-gray-600 ring-2 ring-gray-500"
+                : "border-gray-700 hover:border-gray-600"
                 }`}
               style={{ backgroundColor: "#0a0a0a" }}
             >
@@ -217,8 +225,8 @@ const ThemePopup = ({ onClose }) => {
             <button
               onClick={() => setIsDarkMode(false)}
               className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${!isDarkMode
-                  ? "bg-amber-100 text-amber-700 ring-2 ring-amber-400"
-                  : "bg-primary-100 text-primary-300 hover:bg-primary-200"
+                ? "bg-amber-100 text-amber-700 ring-2 ring-amber-400"
+                : "bg-primary-100 text-primary-300 hover:bg-primary-200"
                 }`}
             >
               <FiSun size={18} />
@@ -227,8 +235,8 @@ const ThemePopup = ({ onClose }) => {
             <button
               onClick={() => setIsDarkMode(true)}
               className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all ${isDarkMode
-                  ? "bg-gray-700 text-white ring-2 ring-gray-500"
-                  : "bg-primary-100 text-primary-300 hover:bg-primary-200"
+                ? "bg-gray-700 text-white ring-2 ring-gray-500"
+                : "bg-primary-100 text-primary-300 hover:bg-primary-200"
                 }`}
             >
               <FiMoon size={18} />
@@ -247,8 +255,8 @@ const ThemePopup = ({ onClose }) => {
                   key={preset.name}
                   onClick={() => handlePresetClick(preset.hue)}
                   className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-sm transition-all ${selectedHue === preset.hue && !selectedSpecial
-                      ? "ring-2 ring-offset-2"
-                      : "hover:scale-105"
+                    ? "ring-2 ring-offset-2"
+                    : "hover:scale-105"
                     }`}
                   style={{
                     backgroundColor: `hsl(${preset.hue}, 70%, ${isDarkMode ? "25%" : "85%"})`,

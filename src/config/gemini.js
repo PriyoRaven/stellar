@@ -1,99 +1,85 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { AI_PERSONAS } from "./personas";
+import { AVAILABLE_MODELS, DEFAULT_MODEL } from "./models";
 
 const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
 const genAI = new GoogleGenerativeAI(apiKey);
 
-// AI Persona configurations
-export const AI_PERSONAS = {
-  default: {
-    name: "Stellar",
-    icon: "✨",
-    description: "Helpful AI assistant",
-    systemPrompt: "You are Stellar, a helpful, friendly, and knowledgeable AI assistant trained by Google and made by Priyadarsi (a.k.a. Raven). Be concise but thorough in your responses."
-  },
-  creative: {
-    name: "Creative Writer",
-    icon: "🎨",
-    description: "Imaginative storyteller & writer",
-    systemPrompt: "You are a Creative Writer AI. You excel at storytelling, poetry, creative writing, and artistic expression. Use vivid language, metaphors, and engaging narratives. Be imaginative and inspiring."
-  },
-  coder: {
-    name: "Code Expert",
-    icon: "💻",
-    description: "Programming specialist",
-    systemPrompt: "You are a Code Expert AI. You specialize in programming, software development, debugging, and technical explanations. Provide clean, well-commented code examples. Explain complex concepts clearly with practical examples."
-  },
-  tutor: {
-    name: "Study Tutor",
-    icon: "📚",
-    description: "Patient teacher & explainer",
-    systemPrompt: "You are a Study Tutor AI. You excel at teaching and explaining concepts in simple terms. Use analogies, examples, and step-by-step explanations. Be patient, encouraging, and thorough. Ask clarifying questions when needed."
-  },
-  casual: {
-    name: "Casual Friend",
-    icon: "😊",
-    description: "Friendly conversationalist",
-    systemPrompt: "You are a Casual Friend AI. Be warm, friendly, and conversational. Use casual language, emojis occasionally, and show genuine interest. Keep things light and fun while still being helpful."
-  }
-};
+// Re-export for convenience
+export { AI_PERSONAS } from "./personas";
+export { AVAILABLE_MODELS, DEFAULT_MODEL } from "./models";
 
-// Get model with optional system instruction
-const getModel = (persona = "default") => {
+// Configuration constants
+const MAX_HISTORY_MESSAGES = 10;
+const MAX_SUGGESTION_CONTEXT = 2;
+
+// Get model with optional system instruction and model selection
+const getModel = (persona = "default", modelId = DEFAULT_MODEL) => {
   const personaConfig = AI_PERSONAS[persona] || AI_PERSONAS.default;
   return genAI.getGenerativeModel({
-    model: "gemini-2.5-flash-lite",
+    model: modelId,
     systemInstruction: personaConfig.systemPrompt,
   });
 };
 
 const generationConfig = {
-  temperature: 1,
-  topP: 0.95,
-  topK: 64,
-  maxOutputTokens: 8192,
+  temperature: 1, // this is for creativity 0 is most conservative and 1 is most creative
+  topP: 0.95, // this is for randomness 0 is most deterministic and 1 is most random
+  topK: 64,  // this is for diversity 0 is most diverse and 64 is most diverse
+  maxOutputTokens: 4096, // this is for length of response
 };
 
-// Main chat function with persona support
-async function run(prompt, history, persona = "default", attachments = []) {
+// Optimize history by limiting messages and removing large attachments from older messages
+const optimizeHistory = (history) => {
+  const recentHistory = history.slice(-MAX_HISTORY_MESSAGES);
+
+  // For older messages, strip out inline data (images/PDFs) to save tokens
+  return recentHistory.map((msg, index) => {
+    // Keep attachments only in the last 2 messages
+    if (index < recentHistory.length - 2) {
+      return {
+        role: msg.role,
+        parts: msg.parts.filter(part => part.text).map(part => ({ text: part.text })),
+      };
+    }
+    return {
+      role: msg.role,
+      parts: msg.parts.map(part => {
+        if (part.text) return { text: part.text };
+        if (part.inlineData) return { inlineData: part.inlineData };
+        return part;
+      }),
+    };
+  });
+};
+
+// Main chat function with persona and model support
+async function run(prompt, history, persona = "default", attachments = [], modelId = DEFAULT_MODEL) {
   try {
-    const model = getModel(persona);
+    const model = getModel(persona, modelId);
 
     // Build parts array for multimodal support
     const parts = [];
-
-    // Add text prompt
     parts.push({ text: prompt });
 
-    // Add any attachments (images or PDFs converted to inline data)
+    // Add any attachments (images or PDFs)
     for (const attachment of attachments) {
-      if (attachment.type === "image") {
+      if (attachment.type === "image" || attachment.type === "pdf") {
         parts.push({
           inlineData: {
             mimeType: attachment.mimeType,
-            data: attachment.data, // base64 encoded
-          }
-        });
-      } else if (attachment.type === "pdf") {
-        // For PDFs, we include the extracted text or base64 data
-        parts.push({
-          inlineData: {
-            mimeType: "application/pdf",
             data: attachment.data,
           }
         });
       }
     }
 
+    // Optimize history before sending
+    const optimizedHistory = optimizeHistory(history.slice(0, -1));
+
     const chatSession = model.startChat({
       generationConfig,
-      history: history.slice(0, -1).map((msg) => ({
-        role: msg.role,
-        parts: msg.parts.map(part => {
-          if (part.text) return { text: part.text };
-          if (part.inlineData) return { inlineData: part.inlineData };
-          return part;
-        }),
-      })),
+      history: optimizedHistory,
     });
 
     const result = await chatSession.sendMessage(parts);
@@ -109,22 +95,33 @@ async function run(prompt, history, persona = "default", attachments = []) {
   }
 }
 
-// Generate smart follow-up suggestions
-export async function generateSuggestions(conversationContext, persona = "default") {
+// Generate smart follow-up suggestions (uses minimal tokens)
+export async function generateSuggestions(conversationContext, persona = "default", modelId = DEFAULT_MODEL) {
   try {
-    const model = getModel(persona);
+    // Use the fastest/cheapest model for suggestions
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash-lite", // Always use lite model for suggestions
+    });
 
-    const suggestionPrompt = `Based on the following conversation, suggest exactly 3 short, engaging follow-up questions the user might want to ask. Return ONLY a JSON array of 3 strings, no other text.
+    // Limit context to save tokens
+    const lines = conversationContext.split('\n');
+    const limitedContext = lines.slice(-MAX_SUGGESTION_CONTEXT * 2).join('\n');
 
-Conversation:
-${conversationContext}
+    const suggestionPrompt = `Based on this conversation, suggest 3 brief follow-up questions. Return ONLY a JSON array.
 
-Return format: ["question 1", "question 2", "question 3"]`;
+${limitedContext}
 
-    const result = await model.generateContent(suggestionPrompt);
+Format: ["q1", "q2", "q3"]`;
+
+    const result = await model.generateContent({
+      contents: [{ parts: [{ text: suggestionPrompt }] }],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 150, // Very small output for suggestions
+      },
+    });
+
     const text = result.response.text();
-
-    // Parse JSON from response
     const jsonMatch = text.match(/\[[\s\S]*\]/);
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);
@@ -136,25 +133,25 @@ Return format: ["question 1", "question 2", "question 3"]`;
   }
 }
 
-// Web search grounding - uses Gemini's built-in grounding
-export async function runWithGrounding(prompt, history, persona = "default") {
+// Web search grounding
+export async function runWithGrounding(prompt, history, persona = "default", modelId = DEFAULT_MODEL) {
   try {
     const personaConfig = AI_PERSONAS[persona] || AI_PERSONAS.default;
 
-    // Use model with Google Search grounding
     const model = genAI.getGenerativeModel({
       model: "gemini-2.0-flash",
       systemInstruction: personaConfig.systemPrompt,
-      tools: [{
-        googleSearch: {}
-      }],
+      tools: [{ googleSearch: {} }],
     });
+
+    // Optimize history
+    const optimizedHistory = optimizeHistory(history.slice(0, -1));
 
     const chatSession = model.startChat({
       generationConfig,
-      history: history.slice(0, -1).map((msg) => ({
+      history: optimizedHistory.map((msg) => ({
         role: msg.role,
-        parts: [{ text: msg.parts[0].text }],
+        parts: [{ text: msg.parts[0]?.text || "" }],
       })),
     });
 
@@ -164,7 +161,6 @@ export async function runWithGrounding(prompt, history, persona = "default") {
       throw new Error("Invalid response format.");
     }
 
-    // Get grounding metadata if available
     const groundingMetadata = result.response.candidates?.[0]?.groundingMetadata;
 
     return {
